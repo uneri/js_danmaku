@@ -16,6 +16,22 @@ class TextLabel extends Actor {
     }
 }
 
+class TextLabelMini extends Actor {
+    constructor(x, y, text) {
+        const hitArea = new Rectangle(0, 0, 0, 0);
+        super(x, y, hitArea);
+        
+        this.text = text;
+    }
+
+    render(target) {
+        const context = target.getContext('2d');
+        context.font = '10px sans-serif';
+        context.fillStyle = 'white';
+        context.fillText(this.text, this.x, this.y);
+    }
+}
+
 class Bullet extends SpriteActor {
     constructor(x, y) {
         const sprite = new Sprite(assets.get('sprite'), new Rectangle(0, 16, 16, 16));
@@ -112,7 +128,7 @@ class EnemyBullet extends SpriteActor {
     }
 }
 
-class Enemy extends SpriteActor {
+class Enemy1 extends SpriteActor {
     constructor(x, y) {
         const sprite = new Sprite(assets.get('sprite'), new Rectangle(16, 0, 16, 16));
         const hitArea = new Rectangle(0, 0, 16, 16);
@@ -161,6 +177,62 @@ class Enemy extends SpriteActor {
         this._timeCount++;
         if(this._timeCount > this._interval) {
             this.shootCircularBullets(15, 1);
+            this._timeCount = 0;
+        }
+
+        // HPがゼロになったらdestroyする
+        if(this.currentHp <= 0) {
+            this.destroy();
+        }
+    }
+}
+
+class Enemy2 extends SpriteActor {
+    constructor(x, y) {
+        const sprite = new Sprite(assets.get('sprite'), new Rectangle(16, 0, 16, 16));
+        const hitArea = new Rectangle(0, 0, 16, 16);
+        super(x, y, sprite, hitArea, ['enemy']);
+
+        this.maxHp = 50;
+        this.currentHp = this.maxHp;
+
+        this._interval = 10;
+        this._timeCount = 0;
+        this._count = 0;
+
+        // プレイヤーの弾に当たったらHPを減らす
+        this.addEventListener('hit', (e) => {
+           if(e.target.hasTag('playerBullet')) {
+               this.currentHp--;
+               this.dispatchEvent('changehp', new GameEvent(this));
+           }
+        });
+    }
+
+    // degree度の方向にspeedの速さで弾を発射する
+    shootBullet(degree, speed) {
+        const rad = degree / 180 * Math.PI;
+        const velocityX = Math.cos(rad) * speed;
+        const velocityY = Math.sin(rad) * speed;
+        
+        const bullet = new EnemyBullet(this.x, this.y, velocityX, velocityY);
+        this.spawnActor(bullet);
+    }
+
+    // num個の弾を円形に発射する
+    shootCircularBullets(num, speed, initialDegree) {
+        const degree = 360 / num;
+        for(let i = 0; i < num; i++) {
+            this.shootBullet(initialDegree + degree * i, speed);
+        }
+    }
+
+    update(gameInfo, input) {
+        // インターバルを経過していたら弾を撃つ
+        this._timeCount++;
+        if(this._timeCount > this._interval) {
+            this._count += 10;
+            this.shootCircularBullets(10, 1, this._count);
             this._timeCount = 0;
         }
 
@@ -221,20 +293,28 @@ class DanmakuStgGameOverScene extends Scene {
     constructor(renderingTarget) {
         super('ゲームオーバー', 'black', renderingTarget);
         const text = new TextLabel(50, 200, 'ゲームオーバー…');
+        const inst2 = new TextLabelMini(80, 350, 'PRESS SPACE KEY TO TITLE');
         this.add(text);
+        this.add(inst2);
+    }
+
+    update(gameInfo, input) {
+        super.update(gameInfo, input);
+        if(input.getKeyDown(' ')) {
+            const mainScene1 = new DanmakuStgTitleScene(this.renderingTarget);
+            this.changeScene(mainScene1);
+        }
     }
 }
 
-class DanmakuStgMainScene extends Scene {
+class DanmakuStgMainScene2 extends Scene {
     constructor(renderingTarget) {
         super('メイン', 'black', renderingTarget);
-<<<<<<< Updated upstream
         const title = new TextLabelMini(10, 10, '２面');
-=======
->>>>>>> Stashed changes
         const fighter = new Fighter(150, 300);
-        const enemy = new Enemy(150, 100);
+        const enemy = new Enemy2(150, 100);
         const hpBar = new EnemyHpBar(50, 20, enemy);
+        this.add(title);
         this.add(fighter);
         this.add(enemy);
         this.add(hpBar);
@@ -253,7 +333,6 @@ class DanmakuStgMainScene extends Scene {
     }
 }
 
-<<<<<<< Updated upstream
 class DanmakuStgMainScene1 extends Scene {
     constructor(renderingTarget) {
         super('メイン', 'black', renderingTarget);
@@ -280,20 +359,24 @@ class DanmakuStgMainScene1 extends Scene {
     }
 }
 
-=======
->>>>>>> Stashed changes
 class DanmakuStgTitleScene extends Scene {
     constructor(renderingTarget) {
         super('タイトル', 'black', renderingTarget);
         const title = new TextLabel(100, 200, '弾幕STG');
+        const inst1 = new TextLabelMini(70, 250, '方向キーで移動、SPACEキーで攻撃');
+        const inst2 = new TextLabelMini(105, 350, 'PRESS SPACE KEY');
         this.add(title);
+        this.add(inst1);
+        this.add(inst2);
     }
 
     update(gameInfo, input) {
         super.update(gameInfo, input);
         if(input.getKeyDown(' ')) {
-            const mainScene = new DanmakuStgMainScene(this.renderingTarget);
-            this.changeScene(mainScene);
+            //const mainScene = new DanmakuStgMainScene(this.renderingTarget);
+            //this.changeScene(mainScene);
+            const mainScene1 = new DanmakuStgMainScene1(this.renderingTarget);
+            this.changeScene(mainScene1);
         }
     }
 }
