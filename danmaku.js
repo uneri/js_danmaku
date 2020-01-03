@@ -275,7 +275,17 @@ class DanmakuStgEndScene extends Scene {
     constructor(renderingTarget) {
         super('クリア', 'black', renderingTarget);
         const text = new TextLabel(60, 200, 'ゲームクリア！');
+        const inst2 = new TextLabelMini(80, 350, 'PRESS SPACE KEY TO TITLE');
         this.add(text);
+        this.add(inst2);
+    }
+    
+    update(gameInfo, input) {
+        super.update(gameInfo, input);
+        if(input.getKeyDown(' ')) {
+            const mainScene1 = new DanmakuStgTitleScene(this.renderingTarget);
+            this.changeScene(mainScene1);
+        }
     }
 }
 
@@ -300,7 +310,7 @@ class DanmakuStgGameOverScene extends Scene {
 class DanmakuStgMainScene2 extends Scene {
     constructor(renderingTarget) {
         super('メイン', 'black', renderingTarget);
-        const title = new TextLabel(10, 400, '２面');
+        const title = new TextLabelMini(10, 10, '２面');
         const fighter = new Fighter(150, 300);
         const enemy = new Enemy2(150, 100);
         const hpBar = new EnemyHpBar(50, 20, enemy);
@@ -326,7 +336,7 @@ class DanmakuStgMainScene2 extends Scene {
 class DanmakuStgMainScene1 extends Scene {
     constructor(renderingTarget) {
         super('メイン', 'black', renderingTarget);
-        const title = new TextLabel(10, 400, '１面');
+        const title = new TextLabelMini(10, 10, '１面');
         const fighter = new Fighter(150, 300);
         const enemy = new Enemy1(150, 100);
         const hpBar = new EnemyHpBar(50, 20, enemy);
